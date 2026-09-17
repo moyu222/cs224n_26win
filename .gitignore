@@ -4,6 +4,9 @@ __MACOSX/
 ._*
 .vscode/
 
+# Course datasets are kept locally and never committed.
+**/data/
+
 # Python and Conda environments
 .venv/
 venv/
