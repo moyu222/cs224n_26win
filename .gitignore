@@ -1,0 +1,27 @@
+# Operating-system and archive-extraction artifacts
+.DS_Store
+__MACOSX/
+._*
+
+# Python and Conda environments
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Jupyter transient files
+.ipynb_checkpoints/
+
+# Test, coverage, and build outputs
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Assignment submission bundles
+*.zip
