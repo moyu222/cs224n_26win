@@ -2,6 +2,7 @@
 .DS_Store
 __MACOSX/
 ._*
+.vscode/
 
 # Python and Conda environments
 .venv/
