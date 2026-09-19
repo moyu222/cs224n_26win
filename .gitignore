@@ -30,3 +30,4 @@ dist/
 # Assignment submission bundles
 *.zip
 .vscode/settings.json
+a2/a2/results/20260918_210241/model.weights

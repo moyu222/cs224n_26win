@@ -41,11 +41,17 @@ class ParserModel(nn.Module):
         @param dropout_prob (float): dropout probability
         """
         super(ParserModel, self).__init__()
+        # m 36
         self.n_features = n_features
+        # |y| 3
         self.n_classes = n_classes
+        # (0,1) 0.5
         self.dropout_prob = dropout_prob
+        # d
         self.embed_size = embeddings.shape[1]
+        # h 200
         self.hidden_size = hidden_size
+        # |V|,d
         self.embeddings = nn.Parameter(torch.tensor(embeddings))
 
         ### YOUR CODE HERE (~9-10 Lines)
@@ -72,8 +78,37 @@ class ParserModel(nn.Module):
         ###     Dropout: https://pytorch.org/docs/stable/nn.html#dropout-layers
         ### 
         ### See the PDF for hints.
+        # m*d
+        input_size = self.n_features * self.embed_size
 
+        # E: (|V|,d)
+        # h = ReLU(xW + b1) x: (B,d*m) W: (d*m, h) h:(B,h) b1:(h,) 自动广播
+        self.embed_to_hidden_weight = nn.Parameter(
+            torch.empty(input_size, self.hidden_size)
+        )
+        nn.init.xavier_uniform_(self.embed_to_hidden_weight)
 
+        # b1: (hidden_size,)
+        self.embed_to_hidden_bias = nn.Parameter(
+            torch.empty(self.hidden_size)
+        )
+        nn.init.uniform_(self.embed_to_hidden_bias)
+
+        # dropout
+        self.dropout = nn.Dropout(p=self.dropout_prob)
+
+        # I = hU + b2 h:(B,hd) U:(hd,|y|) I:(B,|y|) b2:(|y|,)
+        # U: (hidden_size, n_classes)
+        self.hidden_to_logits_weight = nn.Parameter(
+            torch.empty(self.hidden_size, self.n_classes)
+        )
+        nn.init.xavier_uniform_(self.hidden_to_logits_weight)
+
+        # b2: (n_classes,)
+        self.hidden_to_logits_bias = nn.Parameter(
+            torch.empty(self.n_classes)
+        )
+        nn.init.uniform_(self.hidden_to_logits_bias)
 
 
         ### END YOUR CODE
@@ -107,7 +142,10 @@ class ParserModel(nn.Module):
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
         ###     Flatten: https://pytorch.org/docs/stable/generated/torch.flatten.html
         x = None
-
+        # w(B, m) -> x(B, d*m) 
+        # embedding (|V|, d)
+        x = self.embeddings[w]
+        x = x.view(w.shape[0], -1)
 
         ### END YOUR CODE
         return x
@@ -144,7 +182,14 @@ class ParserModel(nn.Module):
         ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
         ###     ReLU: https://pytorch.org/docs/stable/nn.html?highlight=relu#torch.nn.functional.relu
         logits = None
+        # (B, m) -> (B, m*d)
+        e = self.embedding_lookup(w)
+        # relu((B, m*d) @ (m*d, h))
+        h = F.relu(e @ self.embed_to_hidden_weight + self.embed_to_hidden_bias)
+        # dropout
+        h = self.dropout(h)
 
+        logits = h @ self.hidden_to_logits_weight + self.hidden_to_logits_bias
         ### END YOUR CODE
         return logits
 
